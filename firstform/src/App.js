@@ -1,17 +1,19 @@
 import React from "react";
 import logo from "./logo.svg";
 import "./App.css";
+import axios from "axios";
 
 class App extends React.Component {
   constructor() {
     super();
     this.state = {
-      firstName: "",
-      lastName: "",
+      name: "",
+      emailAddr: "",
       inputProvided: false,
       subscribe: true,
       textArea: "",
-      typeOfFeedback: ""
+      typeOfFeedback: "",
+      buttonText: "Submit Form"
     };
     this.handleChange = this.handleChange.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
@@ -26,17 +28,14 @@ class App extends React.Component {
     type === "checkbox"
       ? this.setState({ [name]: checked })
       : this.setState({ [name]: value });
-    this.state.firstName === "" && this.state.lastName === ""
+    this.state.name === ""
       ? this.setState({ inputProvided: false })
       : this.setState({ inputProvided: true });
   }
 
   handleKeyDown(event) {
     let flag = false;
-    if (
-      event.keyCode === 8 &&
-      (this.state.firstName === "" && this.state.lastName === "")
-    ) {
+    if (event.keyCode === 8 && this.state.name === "") {
       flag = false;
       console.log("false flag");
     } else {
@@ -47,28 +46,66 @@ class App extends React.Component {
     });
   }
 
+  formSubmit(event) {
+    event.preventDefault(); //to avoid the page reloading.
+    this.setState({
+      buttonText: "Sending email..."
+    });
+    let data = {
+      emailID: this.state.emailAddr,
+      message: "Email from React Form"
+    };
+
+    axios
+      .post("API_URI", data)
+      .then(res => {
+        alert("email sent!");
+        this.setState({
+          buttonText: "Sent email"
+        });
+        this.resetForm();
+      })
+      .catch(() => {
+        alert("email not sent. Please check your details and submit again!");
+        this.setState({
+          buttonText: "Submit Form"
+        });
+      });
+  }
+
+  resetForm() {
+    this.setState({
+      name: "",
+      emailAddr: "",
+      inputProvided: false,
+      subscribe: true,
+      textArea: "",
+      typeOfFeedback: "",
+      buttonText: "Submit Form"
+    });
+  }
   render() {
     return (
-      <form className="form-app">
-        <label htmlFor="firstName">
+      <form className="form-app" onSubmit={e => this.formSubmit(e)}>
+        <label htmlFor="name">
           First Name
           <input
             type="text"
-            id="firstName"
-            value={this.state.firstName}
-            name="firstName"
+            id="Name"
+            value={this.state.name}
+            name="name"
             onChange={this.handleChange}
             onKeyDown={this.handleKeyDown}
           />
         </label>
 
-        <label htmlFor="lastName">
-          Last Name
+        <label htmlFor="emailAddr">
+          Email Addr
           <input
             type="text"
-            id="lastName"
-            value={this.state.lastName}
-            name="lastName"
+            id="emailAddr"
+            value={this.state.emailAddr}
+            name="emailAddr"
             onChange={this.handleChange}
             onKeyDown={this.handleKeyDown}
           />
@@ -118,12 +155,15 @@ class App extends React.Component {
           </label>
         </div>
         <br />
+        <button className="submit-button" type="submit">
+          {this.state.buttonText}
+        </button>
 
-        {this.state.inputProvided ? (
+        {/*this.state.inputProvided ? (
           <p className="para">
-            {this.state.firstName} {this.state.lastName}
+            {this.state.name}
           </p>
-        ) : null}
+        ) : null*/}
       </form>
     );
   }
